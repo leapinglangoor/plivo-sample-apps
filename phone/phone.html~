@@ -1,0 +1,467 @@
+<html lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta charset="utf-8">
+        <title>Plivo Webphone Demo</title>
+        <meta name="description" content="">
+        <meta name="author" content="">
+
+	<!-- depricated old bootstrap        <link href="./assets/bootstrap-combined.min.css" rel="stylesheet"> -->
+	<link href="./bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+	<!-- Bootstrap theme -->
+	<link href="./bootstrap/dist/css/bootstrap-theme.min.css" rel="stylesheet">
+
+
+
+        <style type="text/css">
+            body {
+                padding-top: 20px;
+                padding-bottom: 40px;
+            }
+
+            .container-narrow {
+                margin: 0 auto;
+                max-width: 700px;
+            }
+            .container-narrow > hr {
+                margin: 30px 0;
+            }
+
+            #btn-container a{
+                margin-top:7px;
+                min-width:7px;
+            }
+        </style>
+	<link href="./assets/keypad.css" rel="stylesheet">
+	<link rel="stylesheet" href="./intl-tel-input-master/build/css/intlTelInput.css">
+
+ 
+   	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+
+        <script type="text/javascript" src="http://s3.amazonaws.com/plivosdk/web/plivo.min.js"></script>
+	<script src="./intl-tel-input-master/build/js/intlTelInput.min.js"></script>
+
+
+
+        <script type="text/javascript">
+	    var in_call = 0;
+
+            function webrtcNotSupportedAlert() {
+                $('#txtStatus').text("");
+                alert("Your browser doesn't support WebRTC. You need Chrome 25 to use this demo");
+            }
+
+            function isNotEmpty(n) {
+                return n.length > 0;
+            }
+
+            function formatUSNumber(n) {
+                var dest = n.replace(/-/g, '');
+                dest = dest.replace(/ /g, '');
+                dest = dest.replace(/\+/g, '');
+                dest = dest.replace(/\(/g, '');
+                dest = dest.replace(/\)/g, '');
+                if (!isNaN(dest)) {
+                    n = dest
+                    if (n.length == 10 && n.substr(0, 1) != "1") {
+                        n = "1" + n;
+                    }
+                }
+                return n;
+            }
+
+            function replaceAll(txt, replace, with_this) {
+                return txt.replace(new RegExp(replace, 'g'),with_this);
+            }
+
+	function status( text, statusclass){
+		$("#status_box").removeClass("alert alert-info");
+		$("#status_box").removeClass("alert alert-warning");
+		$("#status_box").removeClass("alert alert-success");
+		$("#status_box").removeClass("alert alert-danger");
+		$("#status_box").addClass(statusclass);
+		$("#status_box").html(text+'<button type="button" class="btn btn-primary pull-right" id="logout_box" onclick="logout()">Logout</button>');
+	}
+
+            function initUI() {
+                //callbox
+                $('#callcontainer').hide();
+
+
+                status('Waiting login' , "alert alert-info");
+
+
+                $('#login_box').show();
+                $('#logout_box').hide();
+            }
+
+            function callUI() {
+                //show outbound call UI
+                $('#incoming_callbox').hide('slow');
+                $('#callcontainer').show();
+                $('#make_call').text('Call');
+                $('#linkUnmute').hide();
+                $('#linkMute').hide();
+            }
+
+            function IncomingCallUI() {
+                //show incoming call UI
+
+                status('Incoming Call' , "alert alert-warning");
+                $('#callcontainer').hide();
+                $('#incoming_callbox').show('slow');
+            }
+
+            function callAnsweredUI() {
+		//"In-call" UI
+                $('#incoming_callbox').hide('slow');
+                $('#callcontainer').show();
+
+                status('In Call' , "alert alert-success");
+                dialpadShow();
+		$('#make_call').text("End");
+                $('#linkUnmute').hide('slow');
+                $('#linkMute').show('slow');
+            }
+
+
+            function onReady() {
+                console.log("onReady...");
+		initUI();
+                status('Login' , "alert alert-info");
+                $('#login_box').show();
+                $('#linkUnmute').hide();
+                $('#linkMute').hide();
+
+		//Enter key behaviour in forms... all isnt well in bootstrap
+		$("#callcontainer").keypress(function(e) {
+			if ((e.keyCode == 13) && (e.target.type != "textarea")) {
+				e.preventDefault();
+    				call();
+			}
+		});
+            }
+
+            function login() {
+                Plivo.conn.login($("#username").val(), $("#password").val());
+            }
+
+            function logout() {
+                Plivo.conn.logout();
+            }
+
+            function onLogin() {
+
+                status('Login Success' , "alert alert-success");
+                $('#login_box').hide();
+                $('#logout_box').show();
+                $('#callcontainer').show();
+		dialerShow();
+            }
+
+            function onLoginFailed() {
+
+                status('Login Failed' , "alert alert-danger");
+            }
+
+            function onLogout() {
+                initUI();
+            }
+
+            function onCalling() {
+                console.log("onCalling");
+
+                status('Connecting....' , "alert alert-info");
+            }
+
+            function onCallRemoteRinging() {
+
+                status('Ringing..' , "alert alert-warning");
+            }
+
+            function onCallAnswered() {
+		in_call=1;
+                console.log('onCallAnswered');
+                callAnsweredUI();
+            }
+
+            function onCallTerminated() {
+		in_call=0;
+
+                status('Call Terminated' , "alert alert-info");
+
+                console.log("onCallTerminated");
+                callUI();
+            }
+
+            function onCallFailed(cause) {
+		in_call=0;
+                console.log("onCallFailed:"+cause);
+                callUI();
+
+                $('#status_txt').text("Call Failed:"+cause , "alert alert-danger");
+            }
+	
+
+            function call() {
+                if ($('#make_call').text() == "Call") {
+                    var dest = $("#to").val();
+                    if (isNotEmpty(dest)) {
+			dest = dest.replace(/\s/gi, "").replace(/\(/gi, "").replace(/\)/gi, "").replace(/-/gi, "").replace(/\+/gi, "");
+	                console.log("Calling:"+dest);
+	
+                        $('#status_txt').text("Calling.."+dest , "alert alert-info");
+
+                        Plivo.conn.call(dest);
+                        $('#make_call').text("End");
+                    }
+                    else{
+	
+                        status('Invalid Destination' , "alert alert-danger");
+                    }
+
+                }
+                else if($('#make_call').text() == "End") {
+                    status('Hanging..' , "alert alert-warning");
+                    Plivo.conn.hangup();
+                    $('#make_call').text('Call');
+                }
+            }
+
+
+            function dialer(digit) {
+		if( ( digit != "*" && digit != "#" ) && in_call == 0 ) {
+			if($('#to').val() != "" ) {
+				$('#to').val( $('#to').val()+digit );
+			}
+			else
+			{
+				$('#to').val(digit);
+			}
+		}
+		else if( in_call = 1 ) {
+			dtmf(digit);
+		}
+			
+            }
+
+            function dtmf(digit) {
+                console.log("send dtmf="+digit);
+                Plivo.conn.send_dtmf(digit);
+            }
+            function dialpadShow() {
+                $('#btn-container').show();
+            }
+
+            function dialpadHide() {
+                $('#btn-container').hide();
+            }
+
+            function dialerShow() {
+                $('#dialer-container').show();
+            }
+
+            function dialerHide() {
+                $('#dialer-container').hide();
+            }
+
+            function mute() {
+                Plivo.conn.mute();
+                $('#linkUnmute').show('slow');
+                $('#linkMute').hide('slow');
+            }
+
+            function unmute() {
+                Plivo.conn.unmute();
+                $('#linkUnmute').hide('slow');
+                $('#linkMute').show('slow');
+            }
+
+            function onIncomingCall(account_name, extraHeaders) {
+                console.log("onIncomingCall:"+account_name);
+                console.log("extraHeaders=");
+                for (var key in extraHeaders) {
+                    console.log("key="+key+".val="+extraHeaders[key]);
+                }
+                IncomingCallUI();
+            }
+
+            function onIncomingCallCanceled() {
+                callUI();
+            }
+
+            function  onMediaPermission (result) {
+                if (result) {
+                    console.log("get media permission");
+                } else {
+                    alert("if you don't allow media permission, you can't make a call.");
+                }
+            }
+
+            function answer() {
+                console.log("answering");
+                status('Answering....');
+                Plivo.conn.answer();
+                callAnsweredUI();
+            }
+
+            function reject() {
+                callUI();
+                Plivo.conn.reject();
+            }
+
+            $(document).ready(function() {
+                Plivo.onWebrtcNotSupported = webrtcNotSupportedAlert;
+                Plivo.onReady = onReady;
+                Plivo.onLogin = onLogin;
+                Plivo.onLoginFailed = onLoginFailed;
+                Plivo.onLogout = onLogout;
+                Plivo.onCalling = onCalling;
+                Plivo.onCallRemoteRinging = onCallRemoteRinging;
+                Plivo.onCallAnswered = onCallAnswered;
+                Plivo.onCallTerminated = onCallTerminated;
+                Plivo.onCallFailed = onCallFailed;
+                Plivo.onMediaPermission = onMediaPermission;
+                Plivo.onIncomingCall = onIncomingCall;
+                Plivo.onIncomingCallCanceled = onIncomingCallCanceled;
+                Plivo.init();
+
+            });
+
+
+
+        </script>
+
+    </head>
+
+    <body>
+        <div class="container-narrow">
+            <div class="masthead">
+                <img class="muted" src="./assets/logo.png">
+            </div>
+            <hr/>
+            <div class="row-fluid marketing">
+                <div class="span12">
+
+                    <h4>Plivo WebSDK Webphone Demo</h4>
+                    <p>Login to the webphone using your Plivo Endpoint credentials and make calls right out of your web browser!!</p>
+
+                    <hr/>
+
+
+              	    
+                    <div class="alert alert-info clearfix" id="status_box">
+
+		    </div><br/><br/>
+
+
+
+                    <form id="login_box" title="Login"  class="form-inline" role="form">
+			  <div class="form-group">
+                        	<label>Username</label>
+                        	<input class="form-control" type="text" name="username" value="" id="username">
+			  </div>
+
+			  <div class="form-group">
+	                        <label>Password</label>
+        	                <input class="form-control" type="password" name="password" value="" id="password">
+			  </div>
+
+
+	                        <button class="btn btn-default" type="button" id="btn_login" onclick="login()">Login</button>
+
+                    </form>
+                    <div id="incoming_callbox" style="display: none;" class="call">
+                        <a href="#" class="btn main-btn btn-success" onclick="answer()">Answer</a>
+                        <a href="#" class="btn main-btn btn-danger" onclick="reject()">Reject</a>
+                    </div>
+                    <div id="callcontainer" style="display: none" role="form">
+	                                  
+		<table class="keypad">
+
+		<tr class="key-row">
+			<td class="key-cell" colspan="3">
+	
+			<div class="input-group input-group-lg">
+				<input type="tel" name="to" id="to" placeholder="Number or SIP URI" style="height:40px;width:100%"></input>
+	
+			</div>
+	
+			</td>
+
+			<td class="key-cell">
+                              <a href="#" id="linkMute" class="badge badge-warning" onclick="mute();"> Mute </a>
+	                      <a href="#" id="linkUnmute" class="badge badge-warning" onclick="unmute();" style="display: none">Unmute</a>
+			</td>
+
+		</tr>
+	
+	
+		<tr class="key-row">
+			<td class="key-cell">
+				<button class="btn btn-default key" type="button" onclick="dialer('1');">1<br/><span class="key-alt-fn"></span></button>
+			</td>
+			<td class="key-cell">
+				<button class="btn btn-default key" type="button" onclick="dialer('2');">2<br/><span class="key-alt-fn">ABC</span></button>
+			</td>
+			<td class="key-cell">
+				<button class="btn btn-default key" type="button" onclick="dialer('3');">3<br/><span class="key-alt-fn">DEF</span></button>
+			</td>
+
+		</tr>
+		<tr class="key-row">
+			<td class="key-cell">
+				<button class="btn btn-default key" type="button" onclick="dialer('4');">4<br/><span class="key-alt-fn">GHI</span></button>
+			</td>
+			<td class="key-cell">
+				<button class="btn btn-default key" type="button" onclick="dialer('5');">5<br/><span class="key-alt-fn">JKL</span></button>
+			</td>
+			<td class="key-cell">
+				<button class="btn btn-default key" type="button" onclick="dialer('6');">6<br/><span class="key-alt-fn">MNO</span></button>
+			</td>
+		</tr>
+		<tr class="key-row">
+			<td class="key-cell">
+				<button class="btn btn-default key" type="button" onclick="dialer('7');">7<br/><span class="key-alt-fn">PQRS</span></button>
+			</td>
+			<td class="key-cell">
+				<button class="btn btn-default key" type="button" onclick="dialer('8');">8<br/><span class="key-alt-fn">TUV</span></button>
+			</td>
+			<td class="key-cell">
+				<button class="btn btn-default key" type="button" onclick="dialer('9');">9<br/><span class="key-alt-fn">WXYZ</span></button>
+			</td>
+	
+		</tr>
+		<tr class="key-row">
+			<td class="key-cell">
+				<button class="btn btn-default key" type="button" onclick="dialer('*');">*</button>
+			</td>
+			<td class="key-cell" >
+				<button class="btn btn-default key" type="button" onclick="dialer('0');">0<br/><span class="key-alt-fn"></span></button>
+			</td>
+			<td class="key-cell">
+				<button class="btn btn-default key" type="button" onclick="dialer('#');">#</button>
+			</td>
+		</tr>
+		<tr class="key-row">
+			<td class="key-cell" colspan="3">
+				<button id="make_call" class="btn btn-primary key wide-key " type="button" onclick="call();" >Call</button>
+			</td>
+		</tr>
+		</table>
+		</div>
+		<script>
+			  $("#to").intlTelInput();
+		</script>
+                   
+
+
+                <div class="footer">
+                    <p>© Plivo Inc. 2014</p>
+                </div>
+            </div>
+        </div>
+
+
+    </body>
+</html>

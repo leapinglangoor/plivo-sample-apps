@@ -1,0 +1,101 @@
+<html lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta charset="utf-8">
+        <title>Plivo Webphone Demo</title>
+        <meta name="description" content="">
+        <meta name="author" content="">
+
+	<!-- depricated old bootstrap        <link href="./assets/bootstrap-combined.min.css" rel="stylesheet"> -->
+	<link href="./bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+	<!-- Bootstrap theme -->
+	<link href="./bootstrap/dist/css/bootstrap-theme.min.css" rel="stylesheet">
+	<link href="./assets/keypad.css" rel="stylesheet">
+	<link rel="stylesheet" href="./intl-tel-input-master/build/css/intlTelInput.css">
+
+ 
+   <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+
+        <script type="text/javascript" src="http://s3.amazonaws.com/plivosdk/web/plivo.min.js"></script>
+
+
+
+
+
+  
+    </head>
+
+    <body>
+
+  
+ <table class="keypad">
+	<tr class="key-row">
+		<td colspan="4">
+
+		<div class="input-group input-group-lg">
+			<input type="tel" name="to" id="to" placeholder="Phone number or a SIP URI" style="height:40px;width:300px"></input>
+
+		</div>
+
+		</td>
+	</tr>
+
+	<tr class="key-row">
+		<td class="key-cell">
+			<button class="btn btn-default key" type="button" onclick="dialer('1');">1<br/><span class="key-alt-fn"></span></button>
+		</td>
+		<td class="key-cell">
+			<button class="btn btn-default key" type="button" onclick="dialer('2');">2<br/><span class="key-alt-fn">ABC</span></button>
+		</td>
+		<td class="key-cell">
+			<button class="btn btn-default key" type="button" onclick="dialer('3');">3<br/><span class="key-alt-fn">DEF</span></button>
+		</td>
+		<td class="key-cell" rowspan="3">
+			<button class="btn btn-primary key tall-key glyphicon glyphicon-earphone" type="button" onclick="call();" style="height:100%;"><br/><span class="key-alt-fn">Call</span></button>
+		</td>
+	</tr>
+	<tr class="key-row">
+		<td class="key-cell">
+			<button class="btn btn-default key" type="button" onclick="dialer('4');">4<br/><span class="key-alt-fn">GHI</span></button>
+		</td>
+		<td class="key-cell">
+			<button class="btn btn-default key" type="button" onclick="dialer('5');">5<br/><span class="key-alt-fn">JKL</span></button>
+		</td>
+		<td class="key-cell">
+			<button class="btn btn-default key" type="button" onclick="dialer('6');">6<br/><span class="key-alt-fn">MNO</span></button>
+		</td>
+	</tr>
+	<tr class="key-row">
+		<td class="key-cell">
+			<button class="btn btn-default key" type="button" onclick="dialer('7');">7<br/><span class="key-alt-fn">PQRS</span></button>
+		</td>
+		<td class="key-cell">
+			<button class="btn btn-default key" type="button" onclick="dialer('8');">8<br/><span class="key-alt-fn">TUV</span></button>
+		</td>
+		<td class="key-cell">
+			<button class="btn btn-default key" type="button" onclick="dialer('9');">9<br/><span class="key-alt-fn">WXYZ</span></button>
+		</td>
+
+	</tr>
+	<tr class="key-row">
+		<td class="key-cell" colspan="2">
+			<button class="btn btn-default key wide-key" type="button" onclick="dialer('0');">0<br/><span class="key-alt-fn"></span></button>
+		</td>
+		<td class="key-cell">
+			<button class="btn btn-default key" type="button" onclick="dialer('+');">+</button>
+		</td>
+		<td class="key-cell">
+			<button class="btn btn-default key" type="button" onclick="dialer('-');">-</button>
+		</td>
+	</tr>
+</table>
+</div>
+		<script src="./intl-tel-input-master/build/js/intlTelInput.min.js"></script>
+	<script>
+		  $("#to").intlTelInput();
+	</script>
+  
+            </div>
+        </div>
+    </body>
+</html>

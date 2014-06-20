@@ -1,0 +1,52 @@
+.keypad {
+    margin: 10px auto;
+    padding: 0;
+    width: 300px; /* not actually a static size, % in real use */
+}
+
+.keypad .key-row {
+    width: 100%
+}
+
+.keypad .key-row .key-cell {
+    padding: 2px;
+    width: 25%;
+}
+
+.keypad .key-row .key-cell button.key {
+    font-size: medium;
+    font-weight: bold;
+    height: 50px;
+    width: 100%;
+}
+
+.keypad .key-row .key-cell button.key.tall-key {
+    height: 144px;
+}
+
+.keypad .key-row .key-cell button.key.wide-key {
+}
+
+.keypad .key-row .key-cell button .key-alt-fn {
+    font-size: small;
+    font-weight: normal;
+}
+
+.intl-tel-input .flag {background-image: url("intl-tel-input-master/build/img/flags.png");}
+
+.btn-primary {
+  .buttonBackground(#66FF99, #33CC99);
+}
+
+div.alert-info {
+    position: relative;
+}
+
+div.alert-info p.pull-right {
+   -webkit-transform: translateY(-50%);
+   -ms-transform: translateY(-50%);
+   -o-transform: translateY(-50%);
+    transform: translateY(-50%);
+    position: absolute;
+    top: 50%;
+}
