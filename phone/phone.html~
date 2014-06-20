@@ -80,7 +80,7 @@
 		$("#status_box").removeClass("alert alert-success");
 		$("#status_box").removeClass("alert alert-danger");
 		$("#status_box").addClass(statusclass);
-		$("#status_box").html(text+'<button type="button" class="btn btn-primary pull-right" id="logout_box" onclick="logout()">Logout</button>');
+		$("#status_box").text(text);
 	}
 
             function initUI() {
@@ -222,7 +222,7 @@
 
                 }
                 else if($('#make_call').text() == "End") {
-                    status('Hanging..' , "alert alert-warning");
+                    status('Call Terminated..' , "alert alert-warning");
                     Plivo.conn.hangup();
                     $('#make_call').text('Call');
                 }
@@ -349,7 +349,7 @@
                     <hr/>
 
 
-              	    
+              	    <div align="right"><a href="#" id="logout_box" onclick="logout()">Logout</a></div><br />
                     <div class="alert alert-info clearfix" id="status_box">
 
 		    </div><br/><br/>
