@@ -11,6 +11,7 @@ MODERATOR_ID = '1234567890'
 #For SMS, Auth from Plivo
 auth_id = ""
 auth_token = ""
+themodisin = 0
 
 app = Flask(__name__)
 
@@ -50,10 +51,12 @@ def conf_verify_input(caller, called):
 	callbackurl=""
 	if caller == MODERATOR_ID:
 		startonenter="true"
+		themodisin=1
 	else:
 		startonenter="false"
 #		Don't bother the mod if hes already in
-		callbackurl='http://' + SERVER_NAME + '/conf-action/%s/%s' %(caller,called)
+		if themodisin == 0:
+			callbackurl='http://' + SERVER_NAME + '/conf-action/%s/%s' %(caller,called)
 
         response.addConference(
             body=CONF_CODE,
