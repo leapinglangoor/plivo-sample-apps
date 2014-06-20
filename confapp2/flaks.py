@@ -3,13 +3,14 @@ import plivoxml, plivo
 import os
 
 
-
-SERVER_NAME = 'boiling-mesa-5176.herokuapp.com'
-CONF_CODE = '5542'
-MODERATOR_ID = '919964582361'
-#For SMS
-auth_id = "MAMZYWNZHIMZU5MJHKZM"
-auth_token = "ZDQwZjg2OTZhYTk4MzJiNWMxMTY1ODA5OTY0MGEw"
+#Heroku or wherever App base URL
+SERVER_NAME = 'asd-sdf-1234.herokuapp.com'
+CONF_CODE = '1234'
+#Moderator Phone No.
+MODERATOR_ID = '1234567890'
+#For SMS, Auth from Plivo
+auth_id = ""
+auth_token = ""
 themodisin = 0
 
 app = Flask(__name__)
@@ -54,12 +55,11 @@ def conf_verify_input(caller, called):
 	else:
 		startonenter="false"
 #		Don't bother the mod if hes already in
-#		if themodisin == 0:
-		callbackurl='http://' + SERVER_NAME + '/conf-action/%s/%s' %(caller,called)
+		if themodisin == 0:
+			callbackurl='http://' + SERVER_NAME + '/conf-action/%s/%s' %(caller,called)
 
         response.addConference(
             body=CONF_CODE,
-#            action='http://' + SERVER_NAME + '/conf-action/%s/%s' %(caller,called),
             callbackUrl=callbackurl,
 	    startConferenceOnEnter = startonenter,
 	    endConferenceOnExit = startonenter
@@ -88,7 +88,7 @@ def conf_action(caller, called):
     response = p.send_message(params)
     return "Message sent to moderator"
 
-##     And this one for use with restXML
+##     And this one for use with restXML, doesn't send for some reason...
 #    response = plivoxml.Response()
 #
 #    response.addMessage(
@@ -107,22 +107,23 @@ def mesg_action():
     to = request.form.get('To','')
     text = request.form.get('Text','')
 #   Not a good idea when making do with demo sms app
-#    if( From == MODERATOR_ID):
-    text = text.strip("\"")
-    temp = text.split(" ")
-    rxr = temp[0]
-    mesg = " ".join(temp[1:])
-    p = plivo.RestAPI(auth_id, auth_token)
+    if( From == MODERATOR_ID):
+	    text = text.strip("\"")
+	    temp = text.split(" ")
+	    rxr = temp[0]
+	    mesg = " ".join(temp[1:])
+	    p = plivo.RestAPI(auth_id, auth_token)
+	
+	    # SPeak to member
+	    params = {
+		'conference_name' : CONF_CODE,
+		'member_id' : rxr,
+	        'text' : mesg
+	    }
 
-    # SPeak to member
-    params = {
-	'conference_name' : CONF_CODE,
-	'member_id' : rxr,
-        'text' : mesg
-    }
-
-    response = p.speak_member(params)
-    return "Speaking to member "
+	    response = p.speak_member(params)
+	    return "Speaking to member "
+    return "Anauthorized Message"
 
 @app.route('/call-term-action/', methods=['POST'])
 def call_term_action():
